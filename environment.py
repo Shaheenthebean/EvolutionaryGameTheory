@@ -12,4 +12,4 @@ class Environment:
         return nodes[0]
 
     def rebirth(node):
-        return node
+        node.change_strategy()
