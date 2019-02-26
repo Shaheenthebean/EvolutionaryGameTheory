@@ -2,9 +2,10 @@ import random
 
 
 class Environment:
-    def __init__(self,nodes, w, payoff_matrix):
+    def __init__(self,nodes, w, mutation_rate, payoff_matrix):
         self.nodes = nodes
         self.w = w
+        self.mutation_rate = mutation_rate
         self.payoff_matrix = payoff_matrix
 
     def fitness(self, node):
@@ -17,7 +18,13 @@ class Environment:
         return random.choice(nodes)
 
     def rebirth(node):
-        node.change_strategy()
+        parent = self.select_parent()
+        node.last_name = parent.last_name
+        mutate = random.random()
+        if mutate<self.mutation_rate:
+            pass ##change to random strategy
+        else:
+            pass ##change to parent's strategy
 
 
     def update(self):
