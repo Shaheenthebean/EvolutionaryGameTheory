@@ -2,14 +2,16 @@ import random
 
 
 class Environment:
-    def __init__(self,nodes):
+    def __init__(self,nodes, w, payoff_matrix):
         self.nodes = nodes
+        self.w = w
+        self.payoff_matrix = payoff_matrix
 
-    def fitness(self, payoff_matrix, node, w):
+    def fitness(self, node):
         payoff = 0
         for neighbor in node.neighbors:
-            payoff += payoff_matrix[node.strategy][neighbor.strategy]
-        return 1 + w * payoff
+            payoff += self.payoff_matrix[node.strategy][neighbor.strategy]
+        return 1 + self.w * payoff
 
     def selectNode(self):
         return random.choice(nodes)
