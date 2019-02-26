@@ -2,7 +2,7 @@ import random
 
 
 class Environment:
-    def __init__(self,nodes):
+    def __init__(self,graph,matrix):
         self.nodes = nodes
 
     def fitness(self, payoff_matrix, node, w):
