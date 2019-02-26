@@ -1,6 +1,5 @@
 import random
 
-
 class Environment:
     def __init__(self,nodes, w, payoff_matrix):
         self.nodes = nodes
