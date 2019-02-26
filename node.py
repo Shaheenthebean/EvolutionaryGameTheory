@@ -1,4 +1,4 @@
-
+## Class to describe node interactions
 
 class Node:
     def __init__(self, strategy, first_name,last_name):
