@@ -1,4 +1,3 @@
-## Class to describe node interactions
 
 class Node:
     def __init__(self, strategy, first_name, last_name):
@@ -9,6 +8,9 @@ class Node:
 
     def add_neighbor(self, neighbor):
         self.neighbors.append(neighbor)
+
+    def change_strategy(self,strategy):
+        self.strategy = strategy
 
 
 

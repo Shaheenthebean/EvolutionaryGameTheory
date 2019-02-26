@@ -14,8 +14,9 @@ class Environment:
     def selectNode(self):
         return random.choice(nodes)
 
-    def rebirth(self,node):
-        return node
+    def rebirth(node):
+        node.change_strategy()
+
 
     def update(self):
         replaced = self.selectNode()
