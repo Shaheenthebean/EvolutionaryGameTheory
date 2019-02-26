@@ -21,4 +21,4 @@ class Environment:
 
     def update(self):
         replaced = self.selectNode()
-        rebirth(replaced)
+        self.rebirth(replaced)
