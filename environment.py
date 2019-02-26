@@ -1,3 +1,6 @@
+import random
+
+
 class Environment:
     def __init__(self,nodes):
         self.nodes = nodes
@@ -9,7 +12,11 @@ class Environment:
         return 1 + w * payoff
 
     def selectNode(self):
-        return nodes[0]
+        return random.choice(nodes)
 
-    def rebirth(node):
+    def rebirth(self,node):
         return node
+
+    def update(self):
+        replaced = self.selectNode()
+        rebirth(replaced)
