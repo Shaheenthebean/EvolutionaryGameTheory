@@ -15,20 +15,20 @@ class Environment:
         return node
 
 
+import networkx as nx
 
-def generateNodes(graph):
-    nodes = []
-    
+def generateNodes(graph): # Only generates neighbors (not names or strategies)
+    nodes = {graph_id: Node() for graph_id in graph.nodes}
+    for graph_id in nodes:
+        nodes[graph_id].neighbors = [nodes[neighbor_id] for neighbor_id in graph.neighbors(graph_id)]
 
 def generateGraph(nodes):
     graph = nx.Graph()
-
-    names = [node.name for node in nodes]
-    graph.add_nodes_from(names)
+    graph.add_nodes_from(range(len(nodes)))
 
     edges = []
-    for node in nodes:
-        edges += [(node.name, neighbor.name) for neighbor in node.neighbors]
+    for i, node in enumerate(nodes):
+        edges += [(i, nodes.index(neighbor)) for neighbor in node.neighbors]
     graph.add_edges_from(edges)
 
     return graph
