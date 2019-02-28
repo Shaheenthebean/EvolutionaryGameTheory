@@ -34,7 +34,7 @@ class Environment:
 	def select_parent(self): # Still to do
 		node_list = []
 		for node_i in nodes:
-			node_list += [nodes[node_id].get_strategy()] * self.fitness(nodes[node_id])
+			node_list += [nodes[node_id]] * self.fitness(nodes[node_id])
 			print([self.fitness(nodes[node_id]),nodes[node_id].get_strategy()])
 		return choice(node_list)
 
@@ -51,7 +51,7 @@ class Environment:
         # TODO: Generate names
         # TODO: Set strategies
 
-	def generate_raph(self):
+	def generate_graph(self):
 		graph = nx.Graph()
 		graph.add_nodes_from(range(len(self.nodes)))
 
