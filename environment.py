@@ -21,10 +21,13 @@ class Environment:
 
 	def assert_graph(self, graph): # Ensure the graph has all the needed information
 		for node in graph.nodes:
-			assert 'strategy' in graph[node]
-			assert graph[node]['strategy'] in possible_strategies
-			assert 'name' in graph[node]
-			assert type(graph[node][name]) == str
+			# print(graph.nodes[node])
+			assert 'strategy' in graph.nodes[node]
+			assert graph.nodes[node]['strategy'] in possible_strategies
+			assert 'first_name' in graph.nodes[node]
+			assert type(graph.nodes[node]['first_name']) == str
+			assert 'last_name' in graph.nodes[node]
+			assert type(graph.nodes[node]['last_name']) == str
 
 	def __repr__(self):
 		return "graph: {}, payoff: {}, w: {}, mutation: {}".format(self.graph, self.payoff_matrix, self.w, self.mutation_rate)
@@ -32,24 +35,26 @@ class Environment:
 	def fitness(self, node):
 		payoff = 0
 		for neighbor in self.graph.neighbors(node):
-			payoff += self.payoff_matrix[self.graph[node]['strategy']][self.graph[neighbor]['strategy']]
+			payoff += self.payoff_matrix[self.graph.nodes[node]['strategy']][self.graph.nodes[neighbor]['strategy']]
 		f = 1 + self.w * payoff
 		return max(0, f)
 
 	def select_node(self): # Randomly selects node
-		return choice(self.nodes)
+		return random.choice(list(self.graph.nodes.keys()))
 
 	def rebirth(self, node):
 		parent = self.select_parent(node)
-		self.graph[node]['last_name'] = self.graph[parent]['last_name']
+		# print(parent, type(parent))
+		# print(node, type(node))
+		self.graph.nodes[node]['last_name'] = self.graph.nodes[parent]['last_name']
 		if random.random() < self.mutation_rate:
-			self.graph[node]['strategy'] = random.choice(possible_strategies) # Change to random strategy
+			self.graph.nodes[node]['strategy'] = random.choice(possible_strategies) # Change to random strategy
 		else:
-			self.graph[node]['strategy'] = self.graph[parent]['strategy'] # Change to parent's strategy
+			self.graph.nodes[node]['strategy'] = self.graph.nodes[parent]['strategy'] # Change to parent's strategy
 
-	def select_parent(self): # Still to do
+	def select_parent(self, node=None): # Still to do
 		if self.global_parent:
-			nodes = self.nodes
+			nodes = list(self.graph.nodes)
 		else:
 			nodes = list(self.graph.neighbors(node))
 		probs = np.array(list(map(self.fitness, nodes)))
@@ -80,20 +85,22 @@ def make_graph(node_ids, edges, strategies, first_names, last_names):
 			'first_name':	first_names[node_id],
 			'last_name':	last_names[node_id]
 		} for node_id in node_ids}
-	graph.set_node_attributes(attributes)
+	# print(attributes)
+	nx.set_node_attributes(graph, attributes)
+	return graph
 
 # Generate random names
 def random_names(node_ids):
-	first_names, last_names = {}, {}
+	node_first_names, node_last_names = {}, {}
 	surname_idxs = list(range(len(last_names)))
 	random.shuffle(surname_idxs)
 	for i, node_id in enumerate(node_ids):
-		first_names[node_id] = random.choice(first_names)
+		node_first_names[node_id] = random.choice(first_names)
 		if i < len(last_names):
-			last_names[node_id] = last_names[surname_idxs[i]]
+			node_last_names[node_id] = last_names[surname_idxs[i]]
 		else: # out of last names, so give up and just use numbers
-			last_names[node_id] = "surname" + str(i)
-	return first_names, last_names
+			node_last_names[node_id] = "surname" + str(i)
+	return node_first_names, node_last_names
 
 def random_strategies(node_ids):
 	return {node_id: random.choice(possible_strategies) for node_id in node_ids}
@@ -128,7 +135,7 @@ sample_first_names = {
 	'Osher':	'Osher',
 	'Ethan':	'Ethan',
 	'Max':		'Max',
-	'Shaheen',	'Shaheen',
+	'Shaheen':	'Shaheen',
 	'X':		'Bippity'
 }
 
@@ -136,7 +143,7 @@ sample_last_names = {
 	'Osher':	'Lerner',
 	'Ethan':	'Knight',
 	'Max':		'Gotts',
-	'Shaheen',	'Cullen-Baratloo',
+	'Shaheen':	'Cullen-Baratloo',
 	'X':		'Bop'
 }
 
@@ -144,6 +151,6 @@ sample_strategies = {
 	'Osher':	'A',
 	'Ethan':	'B',
 	'Max':		'A',
-	'Shaheen',	'B',
+	'Shaheen':	'B',
 	'X':		'B'
 }
