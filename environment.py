@@ -23,12 +23,12 @@ class Environment:
 		return 1 + self.w * payoff
 
 	def select_node(self): # Randomly selects node
-		return random.choice(nodes)
+		return choice(nodes)
 
 	def rebirth(self, node):
 		parent = self.select_parent()
 		node.last_name = parent.last_name
-		mutate = random.random()
+		mutate = random()
 		if mutate < self.mutation_rate:
 			node.change_strategy(choice([0,1])) # Change to random strategy
 		else:
@@ -39,7 +39,7 @@ class Environment:
 		for node_i in nodes:
 			node_list += [nodes[node_id]] * self.fitness(nodes[node_id])
 			print([self.fitness(nodes[node_id]),nodes[node_id].get_strategy()])
-		return random.choice(node_list)
+		return choice(node_list)
 
 	def update(self): # Moves the environment onto the next time
 		replaced = self.select_node()
@@ -53,14 +53,14 @@ class Environment:
         self.nodes = list(nodes.values())
         # TODO: Generate names
         surname_idxs = list(range(len(last_names)))
-        random.shuffle(surname_idxs)
+        shuffle(surname_idxs)
         for i, node in enumerate(self.nodes):
 			node.strategy = choice([0,1])
             if i < len(last_names):
                 node.last_name = last_names[surname_idxs[i]]
             else:
                 node.last_name = str(i)
-            node.first_name = random.choice(first_names)
+            node.first_name = choice(first_names)
         # TODO: Set strategies
 
 	def generate_graph(self):
