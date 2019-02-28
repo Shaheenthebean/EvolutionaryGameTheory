@@ -4,7 +4,7 @@ a, b, c, d = 1, 2, -5, 4
 payoff_matrix = {'A': {'A': a, 'B': b}, 'B': {'A': c, 'B': d}}
 
 # Make graph
-n_nodes = 10
+n_nodes = 100
 node_ids = range(n_nodes)
 edges = [(node, (node+1) % n_nodes) for node in node_ids]
 first_names, last_names = random_names(node_ids)
@@ -25,7 +25,7 @@ for j in range(100):
 
 	strats = [env.graph.nodes[node]['strategy'] for node in env.graph.nodes]
 	a_dom = strats.count('A') > strats.count('B')
-	print(j, a_dom)
+	# print(j, a_dom)
 	t.append(a_dom)
 
 

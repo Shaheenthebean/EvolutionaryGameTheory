@@ -11,7 +11,7 @@ def sugma_calculation(sugma,a,b,c,d):
 	return sugma*a+b == c+sugma*d
 
 class Environment:
-	def __init__(self, graph, payoff_matrix, mutation_rate, w, global_parent=True):
+	def __init__(self, graph, payoff_matrix, mutation_rate, w, global_parent=False):
 		self.graph = graph
 		self.assert_graph(graph)
 		self.payoff_matrix = payoff_matrix
