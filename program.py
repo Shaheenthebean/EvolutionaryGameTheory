@@ -15,11 +15,12 @@ sugma = (3*n_nodes-8)/n_nodes
 print(sugma*a + b)
 print(c + sugma*d)
 
-env = Environment(graph, payoff_matrix=payoff_matrix, mutation_rate=0.05, w=0.05)
 
-t = []
 iterations = 100
 for j in range(iterations):
+	env = Environment(graph, payoff_matrix=payoff_matrix, mutation_rate=0.05, w=0.05)
+
+	t = []
 	for i in range(10000):
 		env.update()
 
