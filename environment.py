@@ -14,15 +14,15 @@ class Environment:
             payoff += self.payoff_matrix[node.strategy][neighbor.strategy]
         return 1 + self.w * payoff
 
-    def selectNode(self):
+    def selectNode(self): # Randomly selects node
         return choice(nodes)
 
-    def rebirth(node):
+    def rebirth(self,node):
         parent = self.select_parent()
         node.last_name = parent.last_name
         mutate = random.random()
         if mutate<self.mutation_rate:
-            pass ##change to random strategy
+            node.change_strategy(self.select_parent())
         else:
             pass ##change to parent's strategy
 
@@ -35,7 +35,7 @@ class Environment:
             total_fitness += self.fitness(nodes[node_id])
         return choice(node_list)
 
-    def update(self):
+    def update(self): # Moves the environment onto the next time interval
         replaced = self.selectNode()
         self.rebirth(replaced)
 

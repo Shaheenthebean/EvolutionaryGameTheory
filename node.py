@@ -12,9 +12,9 @@ class Node:
     def change_strategy(self,strategy):
         self.strategy = strategy
 
-    def getStrategy(self): 
+    def get_strategy(self): 
         return self.stretegy
-
+    
 def make_neighbors(org1, org2):
     org1.add_neighbor(org2)
     org2.add_neighbor(org1)
