@@ -1,4 +1,4 @@
-from random import *
+import random
 from node import *
 import networkx as nx
 
@@ -23,14 +23,14 @@ class Environment:
 		return 1 + self.w * payoff
 
 	def select_node(self): # Randomly selects node
-		return choice(nodes)
+		return random.choice(nodes)
 
 	def rebirth(self, node):
 		parent = self.select_parent()
 		node.last_name = parent.last_name
-		mutate = random()
+		mutate = random.random()
 		if mutate < self.mutation_rate:
-			node.change_strategy(choice([0,1])) # Change to random strategy
+			node.change_strategy(random.choice([0,1])) # Change to random strategy
 		else:
 			node.change_strategy(parent.strategy) # Change to parent's strategy
 
@@ -39,28 +39,28 @@ class Environment:
 		for node_i in nodes:
 			node_list += [nodes[node_id]] * self.fitness(nodes[node_id])
 			print([self.fitness(nodes[node_id]),nodes[node_id].get_strategy()])
-		return choice(node_list)
+		return random.choice(node_list)
 
 	def update(self): # Moves the environment onto the next time
 		replaced = self.select_node()
 		self.rebirth(replaced)
 
 	def initialize_nodes(self, graph): # Only generates neighbors (not names or strategies)
-        # Connect nodes
+		# Connect nodes
 		nodes = {graph_id: Node() for graph_id in graph.nodes}
 		for graph_id in nodes:
 			nodes[graph_id].neighbors = [nodes[neighbor_id] for neighbor_id in graph.neighbors(graph_id)]
-        self.nodes = list(nodes.values())
-        # TODO: Generate names
-        surname_idxs = list(range(len(last_names)))
-        shuffle(surname_idxs)
-        for i, node in enumerate(self.nodes):
-            if i < len(last_names):
-                node.last_name = last_names[surname_idxs[i]]
-            else:
-                node.last_name = str(i)
-            node.first_name = choice(first_names)
-        # TODO: Set strategies
+		self.nodes = list(nodes.values())
+		# TODO: Generate names
+		surname_idxs = list(range(len(last_names)))
+		random.shuffle(surname_idxs)
+		for i, node in enumerate(self.nodes):
+			if i < len(last_names):
+				node.last_name = last_names[surname_idxs[i]]
+			else:
+				node.last_name = str(i)
+			node.first_name = random.choice(first_names)
+		# TODO: Set strategies
 
 	def generate_graph(self):
 		graph = nx.Graph()
