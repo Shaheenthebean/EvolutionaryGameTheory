@@ -55,6 +55,7 @@ class Environment:
         surname_idxs = list(range(len(last_names)))
         random.shuffle(surname_idxs)
         for i, node in enumerate(self.nodes):
+			node.strategy = choice([0,1])
             if i < len(last_names):
                 node.last_name = last_names[surname_idxs[i]]
             else:
