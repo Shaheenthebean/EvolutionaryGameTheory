@@ -25,7 +25,7 @@ class Environment:
 	def select_node(self): # Randomly selects node
 		return random.choice(nodes)
 
-	def rebirth(node):
+	def rebirth(self, node):
 		parent = self.select_parent()
 		node.last_name = parent.last_name
 		mutate = random.random()
