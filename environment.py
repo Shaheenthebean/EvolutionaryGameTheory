@@ -36,9 +36,9 @@ class Environment:
 
 	def select_parent(self): # Still to do
 		node_list = []
-		for node_i in nodes:
-			node_list += [nodes[node_id]] * self.fitness(nodes[node_id])
-			print([self.fitness(nodes[node_id]),nodes[node_id].get_strategy()])
+		for node in nodes:
+			node_list += [node] * self.fitness(node)
+			print([self.fitness(node),node.get_strategy()])
 		return random.choice(node_list)
 
 	def update(self): # Moves the environment onto the next time
