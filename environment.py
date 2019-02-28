@@ -31,13 +31,15 @@ class Environment:
 
 	def run(self, generations, display=False, debug=False):
 		dominances = []
+		last_flip = 0
 		for gen in range(generations):
 			self.update()
 			strategies = [self.graph.nodes[node]['strategy'] for node in self.graph.nodes]
 			dominance = strategies.count(possible_strategies[0])/len(self.graph.nodes) # must have python3 for division!
 			if debug and len(dominances) != 0:
 				if (dominance > 0.5) != (dominances[-1] > 0.5):
-					print("Dominance flipped at generation {}. A was {}, now is {}".format(gen, dominances[-1], dominance))
+					print("{}\tgens, dominance flipped at {}. A from {} to {}".format(gen-last_flip, gen, dominances[-1], dominance))
+					last_flip = gen
 			dominances.append(dominance)
 			if display:
 				self.display()
