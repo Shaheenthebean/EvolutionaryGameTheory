@@ -31,4 +31,4 @@ for j in range(iterations):
 	t.append(a_dom)
 
 
-print(t.count(True)/float(iterations)*100,"%")
+print(t.count(True)/float(iterations))
