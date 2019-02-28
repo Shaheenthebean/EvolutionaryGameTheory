@@ -15,13 +15,11 @@ sugma = (3*n_nodes-8)/n_nodes
 print(sugma*a + b)
 print(c + sugma*d)
 
-env = Environment(graph, payoff_matrix=payoff_matrix, mutation_rate=0.05, w=0.05)
 
 t = []
 for j in range(100):
-	for i in range(10000):
-		env.update()
-
+	env = Environment(graph, payoff_matrix=payoff_matrix, mutation_rate=0.05, w=0.05)
+	env.run(generations=10000, debug=True)
 
 	strats = [env.graph.nodes[node]['strategy'] for node in env.graph.nodes]
 	a_dom = strats.count('A') > strats.count('B')
