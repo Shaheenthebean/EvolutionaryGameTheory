@@ -18,6 +18,19 @@ class Environment:
 		self.mutation_rate = mutation_rate
 		self.w = w
 		self.global_parent = global_parent
+		self.generation = 1
+
+
+	def update(self): # Moves the environment onto the next time
+		replaced = self.select_node()
+		self.rebirth(replaced)
+		self.generation += 1
+
+	def run(self, generations, display=False):
+		for gen in range(generations):
+			self.update()
+			if display:
+				self.display()
 
 	def assert_graph(self, graph): # Ensure the graph has all the needed information
 		for node in graph.nodes:
@@ -28,6 +41,10 @@ class Environment:
 			assert type(graph.nodes[node]['first_name']) == str
 			assert 'last_name' in graph.nodes[node]
 			assert type(graph.nodes[node]['last_name']) == str
+
+	def set_graph(self, graph):
+		self.assert_graph(graph)
+		self.graph = graph
 
 	def __repr__(self):
 		return "graph: {}, payoff: {}, w: {}, mutation: {}".format(self.graph, self.payoff_matrix, self.w, self.mutation_rate)
@@ -61,10 +78,8 @@ class Environment:
 		probs = probs / sum(probs) # probability distribution sums to 1
 		return np.random.choice(nodes, p=probs)
 
-	def update(self): # Moves the environment onto the next time
-		replaced = self.select_node()
-		self.rebirth(replaced)
-
+	def display(self):
+		pass
 
 def calculate_sugma(self): # This is NOT a typo # TODO: Make work
 		a = self.payoff_matrix['A']['A']
