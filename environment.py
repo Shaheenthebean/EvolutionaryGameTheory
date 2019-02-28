@@ -1,4 +1,4 @@
-import random
+from random import choice
 
 class Environment:
     def __init__(self, nodes, w, payoff_matrix, name, u):
@@ -14,14 +14,19 @@ class Environment:
         return 1 + self.w * payoff
 
     def selectNode(self):
-        return random.choice(nodes)
+        return choice(nodes)
 
     def rebirth(self, node): # Still to do
         node.change_strategy()
 
     def select_parent(self): # Still to do
+        node_list = []
+        total_fitness = 0
         for node_i in nodes:
-            self.fitness(nodes[node_id])
+            node_list += [nodes[node_id].getStrategy()] * self.fitness(nodes[node_id])
+            print([self.fitness(nodes[node_id]),nodes[node_id].getStrategy()])
+            total_fitness += self.fitness(nodes[node_id])
+        return choice(node_list)
 
     def update(self):
         replaced = self.selectNode()
