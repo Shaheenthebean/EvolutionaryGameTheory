@@ -1,5 +1,5 @@
 class Node:
-    def __init__(self, strategy, first_name, last_name):
+    def __init__(self, strategy=None, first_name=None, last_name=None):
         self.strategy = strategy
         self.first_name = first_name
         self.last_name = last_name
@@ -12,7 +12,7 @@ class Node:
         self.strategy = strategy
 
     def get_strategy(self): 
-        return self.stretegy
+        return self.strategy
 
     def get_name(self):
         return [self.first_name, self.last_name]

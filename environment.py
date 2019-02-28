@@ -3,8 +3,8 @@ from node import *
 import networkx as nx
 
 class Environment:
-	def __init__(self, w, mutation_rate, payoff_matrix, nodes = None):
-		self.nodes = nodes
+	def __init__(self, w, mutation_rate, payoff_matrix, nx_graph):
+		self.initialize_nodes(nx_graph)
 		self.w = w
 		self.mutation_rate = mutation_rate
 		self.payoff_matrix = payoff_matrix
@@ -42,18 +42,22 @@ class Environment:
 		replaced = self.select_node()
 		self.rebirth(replaced)
 
-	def generateNodes(graph): # Only generates neighbors (not names or strategies)
+	def initialize_nodes(self, graph): # Only generates neighbors (not names or strategies)
+        # Connect nodes
 		nodes = {graph_id: Node() for graph_id in graph.nodes}
 		for graph_id in nodes:
 			nodes[graph_id].neighbors = [nodes[neighbor_id] for neighbor_id in graph.neighbors(graph_id)]
+        self.nodes = list(nodes.values())
+        # TODO: Generate names
+        # TODO: Set strategies
 
-	def generateGraph(self,nodes):
+	def generate_raph(self):
 		graph = nx.Graph()
-		graph.add_nodes_from(range(len(nodes)))
+		graph.add_nodes_from(range(len(self.nodes)))
 
 		edges = []
-		for i, node in enumerate(nodes):
-			edges += [(i, nodes.index(neighbor)) for neighbor in node.neighbors]
+		for i, node in enumerate(self.nodes):
+			edges += [(i, self.nodes.index(neighbor)) for neighbor in node.neighbors]
 		graph.add_edges_from(edges)
 
 		return graph
