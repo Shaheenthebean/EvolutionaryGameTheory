@@ -163,7 +163,7 @@ sample_first_names = {
 	'Ethan':	'Ethan',
 	'Max':		'Max',
 	'Shaheen':	'Shaheen',
-	'X':		'Bippity'
+	'X':		'X'
 }
 
 sample_last_names = {
