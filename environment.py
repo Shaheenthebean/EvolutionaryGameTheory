@@ -1,4 +1,4 @@
-from random import *
+import random
 from node import *
 import networkx as nx
 import numpy as np
@@ -24,14 +24,14 @@ class Environment:
 		return 1 + self.w * payoff
 
 	def select_node(self): # Randomly selects node
-		return choice(nodes)
+		return random.choice(nodes)
 
 	def rebirth(self, node):
 		parent = self.select_parent()
 		node.last_name = parent.last_name
-		mutate = random()
+		mutate = random.random()
 		if mutate < self.mutation_rate:
-			node.change_strategy(choice([0,1])) # Change to random strategy
+			node.change_strategy(random.choice([0,1])) # Change to random strategy
 		else:
 			node.change_strategy(parent.strategy) # Change to parent's strategy
 
@@ -50,7 +50,7 @@ class Environment:
 		self.rebirth(replaced)
 
 	def initialize_nodes(self, graph): # Only generates neighbors (not names or strategies)
-        # Connect nodes
+		# Connect nodes
 		nodes = {graph_id: Node() for graph_id in graph.nodes}
 		for graph_id in nodes:
 			nodes[graph_id].neighbors = [nodes[neighbor_id] for neighbor_id in graph.neighbors(graph_id)]
