@@ -17,7 +17,8 @@ print(c + sugma*d)
 
 
 t = []
-for j in range(100):
+iterations = 100
+for j in range(iterations):
 	env = Environment(graph, payoff_matrix=payoff_matrix, mutation_rate=0.05, w=0.05)
 	env.run(generations=10000, debug=False)
 
