@@ -10,6 +10,9 @@ class Environment:
 		self.payoff_matrix = payoff_matrix
 		self.graph = None
 
+	def __repr__(self):
+		return [self.graph, self.nodes]
+
 	def fitness(self, node):
 		payoff = 0
 		for neighbor in node.neighbors:
