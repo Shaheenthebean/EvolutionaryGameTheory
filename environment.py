@@ -1,4 +1,4 @@
-from random import choice
+from random import *
 from node import *
 import networkx as nx
 
@@ -27,9 +27,9 @@ class Environment:
 		node.last_name = parent.last_name
 		mutate = random.random()
 		if mutate < self.mutation_rate:
-			node.change_strategy(self.select_node().get_strategy()) # Change to random strategy
+			node.change_strategy(choice([0,1])) # Change to random strategy
 		else:
-			node.change_strategy(self.select_parent()) # Change to parent's strategy
+			node.change_strategy(parent.strategy) # Change to parent's strategy
 
 	def select_parent(self): # Still to do
 		node_list = []
@@ -61,5 +61,3 @@ class Environment:
 		graph.add_edges_from(edges)
 
 		return graph
-
-
