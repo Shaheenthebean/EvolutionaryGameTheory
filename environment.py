@@ -7,13 +7,17 @@ last_names = ["Smith", "Johnson", "Williams", "Jones", "Brown", "Davis", "Miller
 possible_strategies = ['A', 'B']
 
 
+def sugma_calculation(sugma,a,b,c,d):
+	return sugma*a+b == c+sugma*d
+
 class Environment:
-	def __init__(self, graph, payoff_matrix, mutation_rate, w):
+	def __init__(self, graph, payoff_matrix, mutation_rate, w, global_parent=True):
 		self.graph = graph
 		self.assert_graph(graph)
-		self.w = w
-		self.mutation_rate = mutation_rate
 		self.payoff_matrix = payoff_matrix
+		self.mutation_rate = mutation_rate
+		self.w = w
+		self.global_parent = global_parent
 
 	def assert_graph(self, graph): # Ensure the graph has all the needed information
 		for node in graph.nodes:
@@ -33,10 +37,10 @@ class Environment:
 		return max(0, f)
 
 	def select_node(self): # Randomly selects node
-		return random.choice(nodes)
+		return choice(self.nodes)
 
 	def rebirth(self, node):
-		parent = self.select_parent()
+		parent = self.select_parent(node)
 		self.graph[node]['last_name'] = self.graph[parent]['last_name']
 		if random.random() < self.mutation_rate:
 			self.graph[node]['strategy'] = random.choice(possible_strategies) # Change to random strategy
@@ -44,15 +48,27 @@ class Environment:
 			self.graph[node]['strategy'] = self.graph[parent]['strategy'] # Change to parent's strategy
 
 	def select_parent(self): # Still to do
-		fs = [self.fitness(node) for node in self.graph.nodes]
-		total_f = sum(fs)
-		ps = [f/total_f for f in fs] # probability distribution sums to 1
-			# print([self.fitness(node),self.graph[node]['strategy'])
-		return np.random.choice(list(self.graph.nodes), p=ps)
+		if self.global_parent:
+			nodes = self.nodes
+		else:
+			nodes = list(self.graph.neighbors(node))
+		probs = np.array(list(map(self.fitness, nodes)))
+		probs = probs / sum(probs) # probability distribution sums to 1
+		return np.random.choice(nodes, p=probs)
 
 	def update(self): # Moves the environment onto the next time
 		replaced = self.select_node()
 		self.rebirth(replaced)
+
+
+def calculate_sugma(self): # This is NOT a typo # TODO: Make work
+		a = self.payoff_matrix['A']['A']
+		b = self.payoff_matrix['A']['B']
+		c = self.payoff_matrix['B']['A']
+		d = self.payoff_matrix['B']['B']
+		for sugma in range(0,10,0.1):
+			if sugma_calculation(sugma,a,b,c,d):
+				return sugma
 
 def make_graph(node_ids, edges, strategies, first_names, last_names):
 	graph = nx.Graph()  #nx.complete_graph(5)
