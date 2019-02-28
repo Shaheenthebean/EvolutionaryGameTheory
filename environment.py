@@ -169,7 +169,7 @@ sample_last_names = {
 	'Ethan':	'Knight',
 	'Max':		'Gotts',
 	'Shaheen':	'Cullen-Baratloo',
-	'X':		'Bop'
+	'X':		'Box'
 }
 
 sample_strategies = {
