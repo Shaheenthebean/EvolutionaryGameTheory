@@ -29,7 +29,7 @@ class Environment:
 		return choice(self.nodes)
 
 	def rebirth(self, node):
-		parent = self.select_parent()
+		parent = self.select_parent(node)
 		node.last_name = parent.last_name
 		mutate = random()
 		if mutate < self.mutation_rate:
@@ -37,10 +37,10 @@ class Environment:
 		else:
 			node.change_strategy(parent.strategy) # Change to parent's strategy
 
-	def select_parent(self): # Still to do
-		probs = np.array(list(map(self.fitness,self.nodes)))
+	def select_parent(self,node): # Still to do
+		probs = np.array(list(map(self.fitness,node.neighbors)))
 		probs = probs/sum(probs)
-		return np.random.choice(self.nodes,p=probs)
+		return np.random.choice(node.neighbors,p=probs)
 		# node_list = []
 		# for node in nodes:
 		# 	node_list += [node] * self.fitness(node)
