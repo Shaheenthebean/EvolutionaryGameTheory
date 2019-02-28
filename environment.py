@@ -7,7 +7,6 @@ class Environment:
         self.w = w
         self.mutation_rate = mutation_rate
         self.payoff_matrix = payoff_matrix
-        self.u = u
 
     def fitness(self, node):
         payoff = 0
@@ -22,7 +21,7 @@ class Environment:
         parent = self.select_parent()
         node.last_name = parent.last_name
         mutate = random.random()
-        if mutate<self.mutation_rate:
+        if mutate < self.mutation_rate:
             node.change_strategy(self.select_node().get_strategy()) # Change to random strategy
         else:
             node.change_strategy(self.select_parent()) # Change to parent's strategy
