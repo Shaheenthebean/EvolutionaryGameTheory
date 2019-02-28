@@ -18,7 +18,8 @@ print(c + sugma*d)
 env = Environment(graph, payoff_matrix=payoff_matrix, mutation_rate=0.05, w=0.05)
 
 t = []
-for j in range(100):
+iterations = 100
+for j in range(iterations):
 	for i in range(10000):
 		env.update()
 
@@ -29,4 +30,4 @@ for j in range(100):
 	t.append(a_dom)
 
 
-print(t.count(True))
+print(t.count(True)/float(iterations)*100,"%")
