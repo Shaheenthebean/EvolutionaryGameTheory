@@ -74,6 +74,9 @@ class Environment:
 		return random.choice(list(self.graph.nodes.keys()))
 
 	def rebirth(self, node):
+		if not self.global_parent:
+			if len(list(self.graph.neighbors(node))) == 0:
+				return
 		parent = self.select_parent(node)
 		self.graph.nodes[node]['last_name'] = self.graph.nodes[parent]['last_name'].split('|')[0] + '|' + str(self.generation)
 		if random.random() < self.mutation_rate:

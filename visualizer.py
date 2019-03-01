@@ -258,7 +258,7 @@ class Visualizer:
 		
 		pygame.quit()
 
-a, b, c, d = 1, 2, -5, 4
+a, b, c, d = 2, -0.5, 0.5, 1
 payoff_matrix = {'A': {'A': a, 'B': b}, 'B': {'A': c, 'B': d}}
 env = Environment(nx.Graph(), payoff_matrix=payoff_matrix, mutation_rate=0.05, w=1)
 
