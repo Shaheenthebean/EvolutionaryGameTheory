@@ -34,7 +34,6 @@ class Environment:
 		if display:
 			plt.ion()
 			plt.show()
-			plt.subplot(121)
 		for gen in range(generations):
 			self.update()
 			strategies = [self.graph.nodes[node]['strategy'] for node in self.graph.nodes]
