@@ -109,12 +109,12 @@ master_circle = make_circle()
 
 # --- objects ---
 
-def connect(c1, c2):
+def connect(c1, c2, add_connection=True):
     global lines, connections
     # connect two circles with a line segment
     points = [(c1.centerx, c1.centery), (c2.centerx, c2.centery)]
     lines.append((screen, WHITE, False, points))
-    connections.append((circles.index(c1), circles.index(c2)))
+    if add_connection: connections.append((circles.index(c1), circles.index(c2)))
 
 def cycle_color(circle):
     global colors
@@ -205,6 +205,10 @@ while is_running:
             if not making_new_circle and shift_key_held and clicking:
                 circles[selected].x = event.pos[0] + selected_offset_x
                 circles[selected].y = event.pos[1] + selected_offset_y
+                # reset lines
+                lines = []
+                for i, j in connections:
+                    connect(circles[i], circles[j], False)
 
         # -- handle events
         clear_button.handle_event(event)
