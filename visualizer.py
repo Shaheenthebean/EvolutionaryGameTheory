@@ -81,12 +81,14 @@ make_circle = lambda: pygame.Rect(BLOCK_SIZE-10, BLOCK_SIZE-10, BLOCK_SIZE, BLOC
 
 class Visualizer:
 
-	def __init__(self):
+	def __init__(self, env):
+		self.env = env
 		self.clear()
 
 	def clear(self):
 		self.selected =  None
 		self.graph = nx.Graph()
+		self.env.set_graph(self.graph)
 
 	def mouseover(self, node, event):
 		assert isinstance(node, dict), "Node must be passed in as a dictionary (as self.graph.nodes[node])"
@@ -97,15 +99,20 @@ class Visualizer:
 
 	def cycle_strategy(self, node):
 		ind = possible_strategies.index(node['strategy'])
-		new_strat = possible_strategies[(strat_ind + 1) % len(possible_strategies)]
+		new_strat = possible_strategies[(ind + 1) % len(possible_strategies)]
 		node['strategy'] = new_strat
+
+	def update_env(self):
+		self.env.update()
 
 	def run(self):
 		# - buttons -
 
-		run_button = Button(text="Run", pos=(350,350), command=run_cmd) # create button and assign function
-		clear_button = Button(text="Clear", pos=(500,350), command=clear) # create button and assign function
-		master_circle = {'rect': make_circle(), 'size': CIRCLE_RADIUS, 'color': GREEN}
+		run_button = Button(text="Run", pos=(350,350), command=self.update_env) # create button and assign function
+		clear_button = Button(text="Clear", pos=(500,350), command=self.clear) # create button and assign function
+		master_circle_rect = make_circle()
+		master_circle = {'rect': master_circle_rect, 'pos': master_circle_rect.center, 'size': CIRCLE_RADIUS, 'color': GREEN}
+
 
 
 		# - drag -
@@ -152,15 +159,17 @@ class Visualizer:
 							self.graph.add_node(new_node)
 							#(self.selected+1 if self.selected is not None else 0)
 							new_circle = make_circle() # TODO: Necessary?
-							selected_offset_y = new_circle.y - event.pos[1]
-							selected_offset_x = new_circle.x - event.pos[0]
+							
 							making_new_circle = True
 
-							pos = (new_circle.centerx, new_circle.center_y)
+							pos = [event.pos[0] + int(CIRCLE_RADIUS/2), event.pos[1] + int(CIRCLE_RADIUS/2)]
+							selected_offset_y = pos[1] - event.pos[1]
+							selected_offset_x = pos[0] - event.pos[0]
+							#[new_circle.x, new_circle.y]
 							first_name, last_name = random.choice(first_names), random.choice(last_names)
 							nx.set_node_attributes(self.graph, {new_node: {
-								'pos': pos, 'strategy': possible_strategies[0], 'id': new_node,
-								'first_name': first_name, 'last_name': last_name}})
+								'pos': pos, 'strategy': possible_strategies[0], 'size': CIRCLE_RADIUS, 
+								'first_name': first_name, 'last_name': last_name, 'id': new_node}})
 							self.selected = self.graph.nodes[new_node]
 
 						else:
@@ -178,7 +187,7 @@ class Visualizer:
 							self.cycle_strategy(self.selected)
 						else:
 							for node in self.graph.nodes.values():
-								if mouseover(node, event):
+								if self.mouseover(node, event):
 									self.graph.add_edge(self.selected['id'], node['id'])
 									# connect(self.graph.nodes[self.selected], circle)
 						clicking, self.selected = False, None
@@ -204,10 +213,11 @@ class Visualizer:
 			# draw circle generator
 			pygame.draw.rect(screen, master_circle['color'], master_circle['rect'], master_circle['size'])
 			# draw nodes
-			for node in self.graph.nodes.values():
-				color = STRAT_COLORS[node['strategy']]
-				size = CIRCLE_RADIUS * max(0.5, env.fitness(node))
-				pygame.draw.circle(screen, color, node['pos'], size)
+			for node in self.graph.nodes:
+				color = STRAT_COLORS[self.graph.nodes[node]['strategy']]
+				size = int(CIRCLE_RADIUS * max(0.5, self.env.fitness(node)**0.3))
+				pygame.draw.circle(screen, color, self.graph.nodes[node]['pos'], size)
+				self.graph.nodes[node]['size'] = size
 
 			for edge in self.graph.edges:
 				line = [self.graph.nodes[edge[0]]['pos'], self.graph.nodes[edge[1]]['pos']]
@@ -221,3 +231,10 @@ class Visualizer:
 		# --- the end ---
 		
 		pygame.quit()
+
+a, b, c, d = 1, 2, -5, 4
+payoff_matrix = {'A': {'A': a, 'B': b}, 'B': {'A': c, 'B': d}}
+env = Environment(nx.Graph(), payoff_matrix=payoff_matrix, mutation_rate=0.05, w=1)
+
+vis = Visualizer(env)
+vis.run()
