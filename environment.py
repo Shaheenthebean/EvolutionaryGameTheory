@@ -97,7 +97,7 @@ class Environment:
 		# sizes = [self.graph.nodes[node].get('fitness', 1) for node in self.graph.nodes]
 		# colors = ['red' if self.graph.nodes[node]['strategy'] == possible_strategies[0] else 'blue' for node in self.graph.nodes]
 		# labels = {node: self.graph.nodes[node]['strategy'], }
-		nx.draw_circular(self.graph, node_size=sizes, node_color=colors, labels=labels)
+		nx.draw_circular(self.graph, node_size=sizes, node_color=colors, labels=labels, node_shape='s') #shapes: so^>v<dph8
 
 def calculate_sugma(self): # This is NOT a typo # TODO: Make work
 		a = self.payoff_matrix['A']['A']
