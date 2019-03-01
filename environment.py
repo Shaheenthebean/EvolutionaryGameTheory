@@ -2,8 +2,9 @@ import random
 import networkx as nx
 import numpy as np
 import sys
+import matplotlib.pyplot as plt
 if sys.version_info[0] < 3:
-    raise Exception("Must be using Python 3") # from https://stackoverflow.com/questions/9079036/how-do-i-detect-the-python-version-at-runtime
+	raise Exception("Must be using Python 3") # from https://stackoverflow.com/questions/9079036/how-do-i-detect-the-python-version-at-runtime
 
 first_names = ["Liam", "Emma", "Noah", "Olivia", "William", "Ava", "James", "Isabella", "Logan", "Sophia", "Benjamin", "Mia", "Mason", "Charlotte", "Elijah", "Amelia", "Oliver", "Evelyn", "Jacob", "Abigail", "Lucas", "Harper", "Michael", "Emily", "Alexander", "Elizabeth", "Ethan", "Avery", "Daniel", "Sofia", "Matthew", "Ella", "Aiden", "Madison", "Henry", "Scarlett", "Joseph", "Victoria", "Jackson", "Aria", "Samuel", "Grace", "Sebastian", "Chloe", "David", "Camila", "Carter", "Penelope", "Wyatt", "Riley", "Jayden", "Layla", "John", "Lillian", "Owen", "Nora", "Dylan", "Zoey", "Luke", "Mila", "Gabriel", "Aubrey", "Anthony", "Hannah", "Isaac", "Lily", "Grayson", "Addison", "Jack", "Eleanor", "Julian", "Natalie", "Levi", "Luna", "Christopher", "Savannah", "Joshua", "Brooklyn", "Andrew", "Leah", "Lincoln", "Zoe", "Mateo", "Stella", "Ryan", "Hazel", "Jaxon", "Ellie", "Nathan", "Paisley", "Aaron", "Audrey", "Isaiah", "Skylar", "Thomas", "Violet", "Charles", "Claire", "Caleb", "Bella", "Josiah", "Aurora", "Christian", "Lucy", "Hunter", "Anna", "Eli", "Samantha", "Jonathan", "Caroline", "Connor", "Genesis", "Landon", "Aaliyah", "Adrian", "Kennedy", "Asher", "Kinsley", "Cameron", "Allison", "Leo", "Maya", "Theodore", "Sarah"]
 last_names = ["Smith", "Johnson", "Williams", "Jones", "Brown", "Davis", "Miller", "Wilson", "Moore", "Taylor", "Anderson", "Thomas", "Jackson", "White", "Harris", "Martin", "Thompson", "Garcia", "Martinez", "Robinson", "Clark", "Rodriguez", "Lewis", "Lee", "Walker", "Hall", "Allen", "Young", "Hernandez", "King", "Wright", "Lopez", "Hill", "Scott", "Green", "Adams", "Baker", "Gonzalez", "Nelson", "Carter", "Mitchell", "Perez", "Roberts", "Turner", "Phillips", "Campbell", "Parker", "Evans", "Edwards", "Collins", "Stewart", "Sanchez", "Morris", "Rogers", "Reed", "Cook", "Morgan", "Bell", "Murphy", "Bailey", "Rivera", "Cooper", "Richardson", "Cox", "Howard", "Ward", "Torres", "Peterson", "Gray", "Ramirez", "James", "Watson", "Brooks", "Kelly", "Sanders", "Price", "Bennett", "Wood", "Barnes", "Ross", "Henderson", "Coleman", "Jenkins", "Perry", "Powell", "Long", "Patterson", "Hughes", "Flores", "Washington", "Butler", "Simmons", "Foster", "Gonzales", "Bryant", "Alexander", "Russell", "Griffin", "Diaz", "Hayes"]
@@ -15,14 +16,12 @@ def sugma_calculation(sugma,a,b,c,d):
 
 class Environment:
 	def __init__(self, graph, payoff_matrix, mutation_rate, w, global_parent=False):
-		self.graph = graph
-		self.assert_graph(graph)
+		self.set_graph(graph)
 		self.payoff_matrix = payoff_matrix
 		self.mutation_rate = mutation_rate
 		self.w = w
 		self.global_parent = global_parent
 		self.generation = 1
-
 
 	def update(self): # Moves the environment onto the next time
 		replaced = self.select_node()
@@ -32,6 +31,10 @@ class Environment:
 	def run(self, generations, display=False, debug=False):
 		dominances = []
 		last_flip = 0
+		if display:
+			plt.ion()
+			plt.show()
+			plt.subplot(121)
 		for gen in range(generations):
 			self.update()
 			strategies = [self.graph.nodes[node]['strategy'] for node in self.graph.nodes]
@@ -42,20 +45,19 @@ class Environment:
 					last_flip = gen
 			dominances.append(dominance)
 			if display:
+				plt.clf()
 				self.display()
+				plt.draw()
+				plt.pause(0.1)
 
-	def assert_graph(self, graph): # Ensure the graph has all the needed information
-		for node in graph.nodes:
-			# print(graph.nodes[node])
+	def set_graph(self, graph):
+		for node in graph.nodes: # Ensure the graph has all the needed information
 			assert 'strategy' in graph.nodes[node]
 			assert graph.nodes[node]['strategy'] in possible_strategies
 			assert 'first_name' in graph.nodes[node]
 			assert type(graph.nodes[node]['first_name']) == str
 			assert 'last_name' in graph.nodes[node]
 			assert type(graph.nodes[node]['last_name']) == str
-
-	def set_graph(self, graph):
-		self.assert_graph(graph)
 		self.graph = graph
 
 	def __repr__(self):
@@ -65,8 +67,9 @@ class Environment:
 		payoff = 0
 		for neighbor in self.graph.neighbors(node):
 			payoff += self.payoff_matrix[self.graph.nodes[node]['strategy']][self.graph.nodes[neighbor]['strategy']]
-		f = 1 + self.w * payoff
-		return max(0, f)
+		f = max(0, 1 + self.w * payoff)
+		self.graph.nodes[node]['fitness'] = f
+		return f
 
 	def select_node(self): # Randomly selects node
 		return random.choice(list(self.graph.nodes.keys()))
@@ -91,7 +94,13 @@ class Environment:
 		return np.random.choice(nodes, p=probs)
 
 	def display(self):
-		pass
+		sizes = [500*max(0.5, self.fitness(node)) for node in self.graph.nodes]
+		colors = ['red' if node['strategy'] == possible_strategies[0] else 'blue' for node in self.graph.nodes.values()]
+		labels = {node: self.graph.nodes[node]['first_name'] + ' ' + self.graph.nodes[node]['last_name'] for node in self.graph.nodes}
+		# sizes = [self.graph.nodes[node].get('fitness', 1) for node in self.graph.nodes]
+		# colors = ['red' if self.graph.nodes[node]['strategy'] == possible_strategies[0] else 'blue' for node in self.graph.nodes]
+		# labels = {node: self.graph.nodes[node]['strategy'], }
+		nx.draw_circular(self.graph, node_size=sizes, node_color=colors, labels=labels)
 
 def calculate_sugma(self): # This is NOT a typo # TODO: Make work
 		a = self.payoff_matrix['A']['A']
