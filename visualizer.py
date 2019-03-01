@@ -23,14 +23,14 @@ SCREEN_HEIGHT = 400
  
 BLOCK_SIZE = 50
 CIRCLE_RADIUS = int(BLOCK_SIZE/2)
- 
+FONT_SIZE = int(CIRCLE_RADIUS*0.75)
+
 # === CLASSES === (CamelCase names)
  
 class Button():
  
 	def __init__(self, text='OK', pos=(0,0), size=(100,50), command=None):
 		font = pygame.font.SysFont(None, 35)
-   
 		self.text = text
 		self.rect = pygame.Rect((0,0), size)
  
@@ -110,6 +110,8 @@ class Visualizer:
 
 		run_button = Button(text="Run", pos=(350,350), command=self.update_env) # create button and assign function
 		clear_button = Button(text="Clear", pos=(500,350), command=self.clear) # create button and assign function
+		font = pygame.font.SysFont(None, FONT_SIZE)
+
 		master_circle_rect = make_circle()
 		master_circle = {'rect': master_circle_rect, 'pos': master_circle_rect.center, 'size': CIRCLE_RADIUS, 'color': GREEN}
 
@@ -218,6 +220,9 @@ class Visualizer:
 				size = int(CIRCLE_RADIUS * max(0.5, self.env.fitness(node)**0.3))
 				pygame.draw.circle(screen, color, self.graph.nodes[node]['pos'], size)
 				self.graph.nodes[node]['size'] = size
+				name = self.graph.nodes[node]['first_name'] + ' ' + self.graph.nodes[node]['last_name']  
+				text = font.render(name, True, WHITE)
+				screen.blit(text, self.graph.nodes[node]['pos'])
 
 			for edge in self.graph.edges:
 				line = [self.graph.nodes[edge[0]]['pos'], self.graph.nodes[edge[1]]['pos']]
