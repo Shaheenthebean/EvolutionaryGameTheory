@@ -15,11 +15,11 @@ RED   = (255,   0,   0)
 GREEN = (  0, 255,   0)
 BLUE  = (  0,   0, 255)
 
-GEN_TICK = 2
+GEN_TICK = 10
 COLORS = [RED, BLUE]
 STRAT_COLORS = {possible_strategies[0]: RED, possible_strategies[1]: BLUE}
  
-SCREEN_WIDTH  = 600
+SCREEN_WIDTH  = 640
 SCREEN_HEIGHT = 400
  
 BLOCK_SIZE = 50
@@ -221,7 +221,7 @@ class Visualizer:
 
 			# --- update if necessary ---
 			if self.currently_running and  (tick % GEN_TICK == 0):
-				print("Updating")
+				# print("Updating")
 				try: self.env.update()
 				except Exception as e: print(e)
 
@@ -258,7 +258,7 @@ class Visualizer:
 		
 		pygame.quit()
 
-a, b, c, d = 2, -0.5, 0.5, 1
+a, b, c, d = 1.5, -0.5, 0.5, 1
 payoff_matrix = {'A': {'A': a, 'B': b}, 'B': {'A': c, 'B': d}}
 env = Environment(nx.Graph(), payoff_matrix=payoff_matrix, mutation_rate=0.05, w=1)
 
