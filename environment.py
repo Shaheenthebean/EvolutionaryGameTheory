@@ -77,6 +77,9 @@ class Environment:
 		if not self.global_parent:
 			if len(list(self.graph.neighbors(node))) == 0:
 				return
+		else:
+			if len(list(self.graph.nodes)) == 0:
+				return
 		parent = self.select_parent(node)
 		self.graph.nodes[node]['last_name'] = self.graph.nodes[parent]['last_name'].split('|')[0] + '|' + str(self.generation)
 		self.graph.nodes[node]['first_name'] = random.choice(first_names)
