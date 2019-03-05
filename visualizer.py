@@ -15,10 +15,11 @@ RED   = (255,   0,   0)
 GREEN = (  0, 255,   0)
 BLUE  = (  0,   0, 255)
 
+GEN_TICK = 10
 COLORS = [RED, BLUE]
 STRAT_COLORS = {possible_strategies[0]: RED, possible_strategies[1]: BLUE}
  
-SCREEN_WIDTH  = 600
+SCREEN_WIDTH  = 640
 SCREEN_HEIGHT = 400
  
 BLOCK_SIZE = 50
@@ -30,19 +31,22 @@ FONT_SIZE = int(CIRCLE_RADIUS*0.75)
 class Button():
  
 	def __init__(self, text='OK', pos=(0,0), size=(100,50), command=None):
-		font = pygame.font.SysFont(None, 35)
+
+		self.pos, self.size, self.command = pos, size, command
+
+		self.font = pygame.font.SysFont(None, 30)
 		self.text = text
 		self.rect = pygame.Rect((0,0), size)
  
 		self.image_normal = pygame.Surface(size)
 		self.image_normal.fill(WHITE)
-		txt_image = font.render(self.text, True, RED)
+		txt_image = self.font.render(self.text, True, RED)
 		txt_rect = txt_image.get_rect(center=self.rect.center)
 		self.image_normal.blit(txt_image, txt_rect)
 	   
 		self.image_hover = pygame.Surface(size)
 		self.image_hover.fill(RED)
-		txt_image = font.render(self.text, True, WHITE)
+		txt_image = self.font.render(self.text, True, WHITE)
 		txt_rect = txt_image.get_rect(center=self.rect.center)
 		self.image_hover.blit(txt_image, txt_rect)
  
@@ -83,6 +87,7 @@ class Visualizer:
 
 	def __init__(self, env):
 		self.env = env
+		self.currently_running = False
 		self.clear()
 
 	def clear(self):
@@ -102,14 +107,22 @@ class Visualizer:
 		new_strat = possible_strategies[(ind + 1) % len(possible_strategies)]
 		node['strategy'] = new_strat
 
-	def update_env(self):
-		self.env.update()
+	def press_run(self):
+		if not self.currently_running: # pressing stop
+			self.run_button.text = "Run"
+			self.currently_running = True
+		else:
+			self.run_button.text = "Stop"
+			self.currently_running = False
+			try: self.env.update()
+			except Exception as e: print(e)
+		# self.run_button.rerender()
 
 	def run(self):
 		# - buttons -
 
-		run_button = Button(text="Run", pos=(350,350), command=self.update_env) # create button and assign function
-		clear_button = Button(text="Clear", pos=(500,350), command=self.clear) # create button and assign function
+		self.run_button = Button(text="Start/Stop", pos=(SCREEN_WIDTH - 120,SCREEN_HEIGHT-50), command=self.press_run) # create button and assign function
+		self.clear_button = Button(text="Clear", pos=(SCREEN_WIDTH - 250,SCREEN_HEIGHT-50), command=self.clear) # create button and assign function
 		font = pygame.font.SysFont(None, FONT_SIZE)
 
 		master_circle_rect = make_circle()
@@ -128,8 +141,10 @@ class Visualizer:
 		
 		clock = pygame.time.Clock()
 		is_running = True
+		tick = 0
 		
 		while is_running:
+			tick += 1
 			# --- events ---
 
 			events = pygame.event.get()
@@ -201,16 +216,22 @@ class Visualizer:
 							self.selected['pos'][1] = event.pos[1] + selected_offset_y
 
 				# -- handle events
-				clear_button.handle_event(event)
-				run_button.handle_event(event)
-			
+				self.clear_button.handle_event(event)
+				self.run_button.handle_event(event)
+
+			# --- update if necessary ---
+			if self.currently_running and  (tick % GEN_TICK == 0):
+				# print("Updating")
+				try: self.env.update()
+				except Exception as e: print(e)
+
 			# --- draws ---
 		
 			screen.fill(BLACK)
 		
 			# button1.draw(screen)
-			clear_button.draw(screen)  
-			run_button.draw(screen)  
+			self.clear_button.draw(screen)  
+			self.run_button.draw(screen)  
 		
 			# draw circle generator
 			pygame.draw.rect(screen, master_circle['color'], master_circle['rect'], master_circle['size'])
@@ -229,15 +250,15 @@ class Visualizer:
 				pygame.draw.lines(screen, WHITE, False, line)
 
 			pygame.display.update()
-		
+
 			# --- FPS ---
-			clock.tick(25)
+			clock.tick(60)
 		
 		# --- the end ---
 		
 		pygame.quit()
 
-a, b, c, d = 2, -0.5, 0.5, 1
+a, b, c, d = 1.5, -0.5, 0.5, 1
 payoff_matrix = {'A': {'A': a, 'B': b}, 'B': {'A': c, 'B': d}}
 env = Environment(nx.Graph(), payoff_matrix=payoff_matrix, mutation_rate=0.05, w=1)
 

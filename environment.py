@@ -79,6 +79,7 @@ class Environment:
 				return
 		parent = self.select_parent(node)
 		self.graph.nodes[node]['last_name'] = self.graph.nodes[parent]['last_name'].split('|')[0] + '|' + str(self.generation)
+		self.graph.nodes[node]['first_name'] = random.choice(first_names)
 		if random.random() < self.mutation_rate:
 			self.graph.nodes[node]['strategy'] = random.choice(possible_strategies) # Change to random strategy
 		else:
