@@ -39,7 +39,7 @@ class Button():
 		txt_image = font.render(self.text, True, RED)
 		txt_rect = txt_image.get_rect(center=self.rect.center)
 		self.image_normal.blit(txt_image, txt_rect)
-	   
+
 		self.image_hover = pygame.Surface(size)
 		self.image_hover.fill(RED)
 		txt_image = font.render(self.text, True, WHITE)
@@ -47,7 +47,7 @@ class Button():
 		self.image_hover.blit(txt_image, txt_rect)
  
 		self.rect.topleft = pos
-	   
+
 		self.hover = False
 
 		if command:
@@ -105,6 +105,18 @@ class Visualizer:
 	def update_env(self):
 		self.env.update()
 
+	def draw_directed_line(self, _source, _target, width=4):
+		source, target = np.array(_source), np.array(_target)
+		line = [source, target]
+		pygame.draw.lines(screen, WHITE, False, line, width)
+		dif_vec = target - source
+		perp_vec = np.array([-dif_vec[1], dif_vec[0]])/np.linalg.norm(dif_vec)
+		point1 = source + 0.7 * dif_vec
+		point2 = source + (0.7 - 4*width/np.linalg.norm(dif_vec)) * dif_vec + 2 * width * perp_vec
+		point3 = source + (0.7 - 4*width/np.linalg.norm(dif_vec)) * dif_vec - 2 * width * perp_vec
+		triangle = [list(point1), list(point2), list(point3)]
+		pygame.draw.polygon(screen, WHITE, triangle)
+
 	def run(self):
 		# - buttons -
 
@@ -121,6 +133,7 @@ class Visualizer:
 		
 		clicking = False
 		self.selected = None
+		self.mouse_pos = [0,0]
 		making_new_circle = False
 		shift_key_held = None
 
@@ -170,8 +183,7 @@ class Visualizer:
 							#[new_circle.x, new_circle.y]
 							first_name, last_name = random.choice(first_names), random.choice(last_names)
 							nx.set_node_attributes(self.graph, {new_node: {
-								'pos': pos, 'strategy': possible_strategies[0], 'size': CIRCLE_RADIUS, 
-								'first_name': first_name, 'last_name': last_name, 'id': new_node}})
+								'quantity': 0, 'leakage': 0}})
 							self.selected = self.graph.nodes[new_node]
 
 						else:
@@ -186,7 +198,7 @@ class Visualizer:
 						if making_new_circle or (self.selected is None) or shift_key_held:
 							pass
 						elif self.mouseover(self.selected, event):
-							self.cycle_strategy(self.selected)
+							self.selected['quantity'] += 1
 						else:
 							for node in self.graph.nodes.values():
 								if self.mouseover(node, event):
@@ -199,6 +211,7 @@ class Visualizer:
 						if making_new_circle or (shift_key_held and clicking):
 							self.selected['pos'][0] = event.pos[0] + selected_offset_x
 							self.selected['pos'][1] = event.pos[1] + selected_offset_y
+					self.mouse_pos = event.pos
 
 				# -- handle events
 				clear_button.handle_event(event)
@@ -209,8 +222,8 @@ class Visualizer:
 			screen.fill(BLACK)
 		
 			# button1.draw(screen)
-			clear_button.draw(screen)  
-			run_button.draw(screen)  
+			clear_button.draw(screen)
+			run_button.draw(screen)
 		
 			# draw circle generator
 			pygame.draw.rect(screen, master_circle['color'], master_circle['rect'], master_circle['size'])
@@ -220,14 +233,16 @@ class Visualizer:
 				size = int(CIRCLE_RADIUS * max(0.5, self.env.fitness(node)**0.3)) # environment specific
 				pygame.draw.circle(screen, color, self.graph.nodes[node]['pos'], size)
 				self.graph.nodes[node]['size'] = size
-				name = self.graph.nodes[node]['first_name'] + ' ' + self.graph.nodes[node]['last_name']  
+				name = self.graph.nodes[node]['first_name'] + ' ' + self.graph.nodes[node]['last_name']
 				text = font.render(name, True, WHITE)
 				screen.blit(text, self.graph.nodes[node]['pos'])
 
 			for edge in self.graph.edges:
-				line = [self.graph.nodes[edge[0]]['pos'], self.graph.nodes[edge[1]]['pos']]
-				pygame.draw.lines(screen, WHITE, False, line)
-				# TODO: Add direction of line and strength of connection
+				self.draw_directed_line(self.graph.nodes[edge[0]]['pos'], self.graph.nodes[edge[1]]['pos'])
+
+			# display line while dragging
+			if clicking and not making_new_circle and not shift_key_held and self.selected != None:
+				self.draw_directed_line(self.selected['pos'], self.mouse_pos)
 
 			pygame.display.update()
 		
@@ -241,7 +256,7 @@ class Visualizer:
 if __name__ == "__main__":
 	a, b, c, d = 2, -0.5, 0.5, 1
 	payoff_matrix = {'A': {'A': a, 'B': b}, 'B': {'A': c, 'B': d}}
-	env = Environment(nx.Graph(), payoff_matrix=payoff_matrix, mutation_rate=0.05, w=1)
+	env = Environment(nx.DiGraph(), payoff_matrix=payoff_matrix, mutation_rate=0.05, w=1)
 
 	vis = Visualizer(env)
 	vis.run()
