@@ -17,6 +17,14 @@ GREEN = (  0, 255,   0)
 BLUE  = (  0,   0, 255)
 GREY  = (100, 100, 100)
 
+def gradient(c):
+	EMPTY = GREY
+	FULL = RED
+	temp = max(min(c * 20, 1), 0)
+	# print(c, temp)
+	color = tuple(np.array(EMPTY) + temp * (np.array(FULL) - np.array(EMPTY)))
+	return color
+
 COLORS = [RED, BLUE]
 # STRAT_COLORS = {possible_strategies[0]: RED, possible_strategies[1]: BLUE}
 
@@ -107,10 +115,19 @@ class Visualizer:
 	def update_env(self):
 		self.env.update()
 
-	def draw_directed_line(self, _source, _target, width=4):
+	def draw_directed_line(self, _source, _target, weight=None, transfer=None):
+		if weight == None:
+			color = WHITE
+		else:
+			color = gradient(weight)
+		if transfer == None:
+			width = 4
+		else:
+			width = int((transfer * 200)**0.7)
+			
 		source, target = np.array(_source), np.array(_target)
 		line = [source, target]
-		pygame.draw.lines(screen, WHITE, False, line, width)
+		pygame.draw.lines(screen, color, False, line, width)
 		dif_vec = target - source
 		# print(source, target, dif_vec, np.linalg.norm(dif_vec))
 		perp_vec = np.array([-dif_vec[1], dif_vec[0]])/np.linalg.norm(dif_vec)
@@ -118,7 +135,8 @@ class Visualizer:
 		point2 = source + (0.7 - 4*width/np.linalg.norm(dif_vec)) * dif_vec + 2 * width * perp_vec
 		point3 = source + (0.7 - 4*width/np.linalg.norm(dif_vec)) * dif_vec - 2 * width * perp_vec
 		triangle = [list(point1), list(point2), list(point3)]
-		pygame.draw.polygon(screen, WHITE, triangle)
+		pygame.draw.polygon(screen, color, triangle)
+
 
 	def run(self):
 		# - buttons -
@@ -176,7 +194,7 @@ class Visualizer:
 							self.graph.add_node(new_node)
 							epsilon = 0.005
 							self.graph.add_edge(new_node, "Garbage", weight=epsilon)
-							print(self.graph.edges)
+							# print(self.graph.edges)
 							#(self.selected+1 if self.selected is not None else 0)
 							pos = [event.pos[0] + int(CIRCLE_RADIUS/2), event.pos[1] + int(CIRCLE_RADIUS/2)]
 							selected_offset_y = pos[1] - event.pos[1]
@@ -205,7 +223,7 @@ class Visualizer:
 									c = 0.01
 									self.graph.add_edge(self.selected['id'], node['id'], weight=c)
 									# self.graph.add_edge(node['id'], self.selected['id'])
-									print(self.graph.edges)
+									# print(self.graph.edges)
 									# connect(self.graph.nodes[self.selected], circle)
 						clicking, self.selected = False, None
 
@@ -232,7 +250,10 @@ class Visualizer:
 			pygame.draw.rect(screen, generator['color'], generator['rect'], generator['size'])
 
 			for edge in self.graph.edges:
-				self.draw_directed_line(self.graph.nodes[edge[0]]['pos'], self.graph.nodes[edge[1]]['pos'])
+				source, target = self.graph.nodes[edge[0]]['pos'], self.graph.nodes[edge[1]]['pos']
+				weight = self.graph.edges[edge]['weight']
+				transfer = self.graph.nodes[edge[0]]['quantity'] * weight
+				self.draw_directed_line(source, target, weight=weight, transfer=transfer)
 
 			# draw nodes
 			for node in self.graph.nodes:
@@ -242,7 +263,7 @@ class Visualizer:
 				if node == "Garbage":
 					pygame.draw.rect(screen, self.graph.nodes[node]['color'], self.graph.nodes[node]['rect'], size)
 					continue
-				color = WHITE#STRAT_COLORS[self.graph.nodes[node]['strategy']]
+				color = WHITE #STRAT_COLORS[self.graph.nodes[node]['strategy']]
 				pygame.draw.circle(screen, color, self.graph.nodes[node]['pos'], size)
 				text = font.render(str(self.graph.nodes[node]['quantity']), True, BLUE)
 				screen.blit(text, self.graph.nodes[node]['pos'])
