@@ -5,9 +5,11 @@
 import pygame
 import networkx as nx
 import numpy as np
+import random
 from DFQEnv import *
 
 # === CONSTANTS === (UPPER_CASE names)
+GEN_TICK = 5
 
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
@@ -62,35 +64,36 @@ class Button():
 
 		if command:
 			self.command = command
- 
+
 	def draw(self, screen):
 		if self.hover:
 			screen.blit(self.image_hover, self.rect)
 		else:
 			screen.blit(self.image_normal, self.rect)
- 
+
 	def handle_event(self, event):
 		if event.type == pygame.MOUSEMOTION:
 			self.hover = self.rect.collidepoint(event.pos)
- 
+
 		if self.hover and self.command:
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if event.button == 1:
 					self.command()
- 
+
 # --- init ---
- 
+
 pygame.init()
- 
+
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 screen_rect = screen.get_rect()
- 
+
 # - circles -
 
 class Visualizer:
 
 	def __init__(self, env):
 		self.env = env
+		self.currently_running = False
 		self.clear()
 
 	def clear(self):
@@ -112,8 +115,16 @@ class Visualizer:
 	def add_quantity(self, node):
 		node['quantity'] += 1
 
-	def update_env(self):
-		self.env.update()
+	def press_run(self):
+		if not self.currently_running: # pressing stop
+			self.run_button.text = "Run"
+			self.currently_running = True
+		else:
+			self.run_button.text = "Stop"
+			self.currently_running = False
+			try: self.env.update()
+			except Exception as e: print(e)
+		# self.run_button.rerender()
 
 	def draw_directed_line(self, _source, _target, weight=None, transfer=None):
 		if weight == None:
@@ -124,7 +135,7 @@ class Visualizer:
 			width = 4
 		else:
 			width = int((transfer * 200)**0.7)
-			
+
 		source, target = np.array(_source), np.array(_target)
 		line = [source, target]
 		pygame.draw.lines(screen, color, False, line, width)
@@ -141,8 +152,8 @@ class Visualizer:
 	def run(self):
 		# - buttons -
 
-		run_button = Button(text="Run", pos=(350,350), command=self.update_env) # create button and assign function
-		clear_button = Button(text="Clear", pos=(500,350), command=self.clear) # create button and assign function
+		self.run_button = Button(text="Start/Stop", pos=(SCREEN_WIDTH - 120,SCREEN_HEIGHT-50), command=self.press_run) # create button and assign function
+		self.clear_button = Button(text="Clear", pos=(SCREEN_WIDTH - 250,SCREEN_HEIGHT-50), command=self.clear) # create button and assign function
 		font = pygame.font.SysFont(None, FONT_SIZE)
 
 		generator_rect = pygame.Rect(BLOCK_SIZE-10, BLOCK_SIZE-10, BLOCK_SIZE, BLOCK_SIZE)
@@ -162,7 +173,9 @@ class Visualizer:
 		clock = pygame.time.Clock()
 		is_running = True
 
+		tick = 0
 		while is_running:
+			tick += 1
 			# --- events ---
 
 			events = pygame.event.get()
@@ -192,7 +205,8 @@ class Visualizer:
 						if self.mouseover(generator, event):
 							new_node = len(self.graph.nodes)
 							self.graph.add_node(new_node)
-							epsilon = 0.001
+							# epsilon = 0.001 + 0.0001(ranom.random()-0.5)
+							epsilon = 0.005 * random.random()
 							self.graph.add_edge(new_node, "Garbage", weight=epsilon)
 							# print(self.graph.edges)
 							#(self.selected+1 if self.selected is not None else 0)
@@ -216,11 +230,11 @@ class Visualizer:
 						if making_new_circle or (self.selected is None) or shift_key_held:
 							pass
 						elif self.mouseover(self.selected, event):
-							self.selected['quantity'] += 1
+							self.selected['quantity'] += 2.5
 						else:
 							for node in self.graph.nodes.values():
 								if self.mouseover(node, event):
-									c = 0.01
+									c = 0.03 * random.random()
 									self.graph.add_edge(self.selected['id'], node['id'], weight=c)
 									# self.graph.add_edge(node['id'], self.selected['id'])
 									# print(self.graph.edges)
@@ -235,16 +249,22 @@ class Visualizer:
 					self.mouse_pos = event.pos
 
 				# -- handle events
-				clear_button.handle_event(event)
-				run_button.handle_event(event)
-			
+				self.clear_button.handle_event(event)
+				self.run_button.handle_event(event)
+
+			# --- update if necessary ---
+			if self.currently_running and  (tick % GEN_TICK == 0):
+				# print("Updating")
+				try: self.env.update()
+				except Exception as e: print(e)
+
 			# --- draws ---
 
 			screen.fill(BLACK)
 
 			# button1.draw(screen)
-			clear_button.draw(screen)
-			run_button.draw(screen)
+			self.clear_button.draw(screen)
+			self.run_button.draw(screen)
 
 			# draw circle generator
 			pygame.draw.rect(screen, generator['color'], generator['rect'], generator['size'])
@@ -263,7 +283,8 @@ class Visualizer:
 				if node == "Garbage":
 					pygame.draw.rect(screen, self.graph.nodes[node]['color'], self.graph.nodes[node]['rect'], size)
 					continue
-				color = WHITE #STRAT_COLORS[self.graph.nodes[node]['strategy']]
+				color = WHITE
+				color = gradient(self.graph.nodes[node]['quantity']/1000)
 				pygame.draw.circle(screen, color, self.graph.nodes[node]['pos'], size)
 				text = font.render(str(self.graph.nodes[node]['quantity']), True, BLUE)
 				screen.blit(text, self.graph.nodes[node]['pos'])
