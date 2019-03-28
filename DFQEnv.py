@@ -19,4 +19,9 @@ class DFQEnv:
 		self.graph = graph
 
 	def update(self):
-		pass
+		for edge in self.graph.edges:
+			assert 0 <= self.graph.edges[edge]['weight'] <= 1
+			source, target = self.graph.nodes[edge[0]], self.graph.nodes[edge[1]]
+			transfer = source['quantity'] * self.graph.edges[edge]['weight']
+			source['quantity'] -= transfer
+			target['quantity'] += transfer

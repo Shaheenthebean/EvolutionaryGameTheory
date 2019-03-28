@@ -87,10 +87,11 @@ class Visualizer:
 
 	def clear(self):
 		self.selected =  None
-		self.graph = nx.Graph()
+		self.graph = nx.DiGraph()
 		self.graph.add_node("Garbage")
 		garbage_rect = pygame.Rect(SCREEN_WIDTH-BLOCK_SIZE-10, BLOCK_SIZE-10, SCREEN_WIDTH-BLOCK_SIZE, BLOCK_SIZE)
-		nx.set_node_attributes(self.graph, {"Garbage": {'rect': garbage_rect, 'pos': garbage_rect.center, 'quantity': 0, 'color': GREY}})
+		garbage_pos = [SCREEN_WIDTH - BLOCK_SIZE-10, BLOCK_SIZE]
+		nx.set_node_attributes(self.graph, {"Garbage": {'rect': garbage_rect, 'pos': garbage_pos, 'quantity': 0, 'color': GREY}})
 		self.env.set_graph(self.graph)
 
 	def mouseover(self, node, event):
@@ -111,6 +112,7 @@ class Visualizer:
 		line = [source, target]
 		pygame.draw.lines(screen, WHITE, False, line, width)
 		dif_vec = target - source
+		# print(source, target, dif_vec, np.linalg.norm(dif_vec))
 		perp_vec = np.array([-dif_vec[1], dif_vec[0]])/np.linalg.norm(dif_vec)
 		point1 = source + 0.7 * dif_vec
 		point2 = source + (0.7 - 4*width/np.linalg.norm(dif_vec)) * dif_vec + 2 * width * perp_vec
@@ -172,12 +174,15 @@ class Visualizer:
 						if self.mouseover(generator, event):
 							new_node = len(self.graph.nodes)
 							self.graph.add_node(new_node)
-							self.graph.add_edge(new_node, "Garbage")
+							epsilon = 0.005
+							self.graph.add_edge(new_node, "Garbage", weight=epsilon)
+							print(self.graph.edges)
 							#(self.selected+1 if self.selected is not None else 0)
 							pos = [event.pos[0] + int(CIRCLE_RADIUS/2), event.pos[1] + int(CIRCLE_RADIUS/2)]
 							selected_offset_y = pos[1] - event.pos[1]
 							selected_offset_x = pos[0] - event.pos[0]
-							nx.set_node_attributes(self.graph, {new_node: {'pos': pos, 'quantity': 0, 'leakage': 0, 'id': new_node}})
+							default_quantity = 20
+							nx.set_node_attributes(self.graph, {new_node: {'pos': pos, 'quantity': default_quantity, 'leakage': 0, 'id': new_node}})
 							self.selected = self.graph.nodes[new_node]
 							making_new_circle = True
 
@@ -197,7 +202,10 @@ class Visualizer:
 						else:
 							for node in self.graph.nodes.values():
 								if self.mouseover(node, event):
-									self.graph.add_edge(node['id'], self.selected['id'])
+									c = 0.01
+									self.graph.add_edge(self.selected['id'], node['id'], weight=c)
+									# self.graph.add_edge(node['id'], self.selected['id'])
+									print(self.graph.edges)
 									# connect(self.graph.nodes[self.selected], circle)
 						clicking, self.selected = False, None
 
@@ -222,19 +230,22 @@ class Visualizer:
 
 			# draw circle generator
 			pygame.draw.rect(screen, generator['color'], generator['rect'], generator['size'])
-			# draw garbage
-			# draw nodes
-			for node in self.graph.nodes:
-				size = int(self.graph.nodes[node]['quantity']**0.3 + 10)
-				self.graph.nodes[node]['size'] = size
-				if node == "Garbage":
-					pygame.draw.rect(screen, self.graph.nodes[node]['color'], self.graph.nodes[node]['rect'], self.graph.nodes[node]['quantity'])
-					continue
-				color = WHITE#STRAT_COLORS[self.graph.nodes[node]['strategy']]
-				pygame.draw.circle(screen, color, self.graph.nodes[node]['pos'], size)
 
 			for edge in self.graph.edges:
 				self.draw_directed_line(self.graph.nodes[edge[0]]['pos'], self.graph.nodes[edge[1]]['pos'])
+
+			# draw nodes
+			for node in self.graph.nodes:
+				size = int(self.graph.nodes[node]['quantity'] + 10)
+				self.graph.nodes[node]['size'] = size
+				# draw garbage
+				if node == "Garbage":
+					pygame.draw.rect(screen, self.graph.nodes[node]['color'], self.graph.nodes[node]['rect'], size)
+					continue
+				color = WHITE#STRAT_COLORS[self.graph.nodes[node]['strategy']]
+				pygame.draw.circle(screen, color, self.graph.nodes[node]['pos'], size)
+				text = font.render(str(self.graph.nodes[node]['quantity']), True, BLUE)
+				screen.blit(text, self.graph.nodes[node]['pos'])
 
 			# display line while dragging
 			if clicking and not making_new_circle and not shift_key_held and self.selected != None:
