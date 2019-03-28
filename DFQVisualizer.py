@@ -192,7 +192,7 @@ class Visualizer:
 						if self.mouseover(generator, event):
 							new_node = len(self.graph.nodes)
 							self.graph.add_node(new_node)
-							epsilon = 0.005
+							epsilon = 0.001
 							self.graph.add_edge(new_node, "Garbage", weight=epsilon)
 							# print(self.graph.edges)
 							#(self.selected+1 if self.selected is not None else 0)
