@@ -4,7 +4,8 @@
 
 import pygame
 import networkx as nx
-from environment import *
+import numpy as np
+from DFQEnv import *
 
 # === CONSTANTS === (UPPER_CASE names)
 
@@ -14,9 +15,10 @@ WHITE = (255, 255, 255)
 RED   = (255,   0,   0)
 GREEN = (  0, 255,   0)
 BLUE  = (  0,   0, 255)
+GREY  = (100, 100, 100)
 
 COLORS = [RED, BLUE]
-STRAT_COLORS = {possible_strategies[0]: RED, possible_strategies[1]: BLUE}
+# STRAT_COLORS = {possible_strategies[0]: RED, possible_strategies[1]: BLUE}
 
 SCREEN_WIDTH  = 600
 SCREEN_HEIGHT = 400
@@ -77,8 +79,6 @@ screen_rect = screen.get_rect()
  
 # - circles -
 
-make_circle = lambda: pygame.Rect(BLOCK_SIZE-10, BLOCK_SIZE-10, BLOCK_SIZE, BLOCK_SIZE)
-
 class Visualizer:
 
 	def __init__(self, env):
@@ -88,6 +88,9 @@ class Visualizer:
 	def clear(self):
 		self.selected =  None
 		self.graph = nx.Graph()
+		self.graph.add_node("Garbage")
+		garbage_rect = pygame.Rect(SCREEN_WIDTH-BLOCK_SIZE-10, BLOCK_SIZE-10, SCREEN_WIDTH-BLOCK_SIZE, BLOCK_SIZE)
+		nx.set_node_attributes(self.graph, {"Garbage": {'rect': garbage_rect, 'pos': garbage_rect.center, 'quantity': 0, 'color': GREY}})
 		self.env.set_graph(self.graph)
 
 	def mouseover(self, node, event):
@@ -97,10 +100,8 @@ class Visualizer:
 		distance_square = dx**2 + dy**2 # C^2
 		return distance_square <= node['size']**2
 
-	def cycle_strategy(self, node):
-		ind = possible_strategies.index(node['strategy'])
-		new_strat = possible_strategies[(ind + 1) % len(possible_strategies)]
-		node['strategy'] = new_strat
+	def add_quantity(self, node):
+		node['quantity'] += 1
 
 	def update_env(self):
 		self.env.update()
@@ -124,9 +125,8 @@ class Visualizer:
 		clear_button = Button(text="Clear", pos=(500,350), command=self.clear) # create button and assign function
 		font = pygame.font.SysFont(None, FONT_SIZE)
 
-		master_circle_rect = make_circle()
-		master_circle = {'rect': master_circle_rect, 'pos': master_circle_rect.center, 'size': CIRCLE_RADIUS, 'color': GREEN}
-
+		generator_rect = pygame.Rect(BLOCK_SIZE-10, BLOCK_SIZE-10, BLOCK_SIZE, BLOCK_SIZE)
+		generator = {'rect': generator_rect, 'pos': generator_rect.center, 'size': CIRCLE_RADIUS, 'color': GREEN}
 
 
 		# - drag -
@@ -169,22 +169,17 @@ class Visualizer:
 				elif event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 
-						if self.mouseover(master_circle, event):
+						if self.mouseover(generator, event):
 							new_node = len(self.graph.nodes)
 							self.graph.add_node(new_node)
+							self.graph.add_edge(new_node, "Garbage")
 							#(self.selected+1 if self.selected is not None else 0)
-							new_circle = make_circle() # TODO: Necessary?
-							
-							making_new_circle = True
-
 							pos = [event.pos[0] + int(CIRCLE_RADIUS/2), event.pos[1] + int(CIRCLE_RADIUS/2)]
 							selected_offset_y = pos[1] - event.pos[1]
 							selected_offset_x = pos[0] - event.pos[0]
-							#[new_circle.x, new_circle.y]
-							first_name, last_name = random.choice(first_names), random.choice(last_names)
-							nx.set_node_attributes(self.graph, {new_node: {
-								'quantity': 0, 'leakage': 0}})
+							nx.set_node_attributes(self.graph, {new_node: {'pos': pos, 'quantity': 0, 'leakage': 0, 'id': new_node}})
 							self.selected = self.graph.nodes[new_node]
+							making_new_circle = True
 
 						else:
 							for node in self.graph.nodes.values():
@@ -202,7 +197,7 @@ class Visualizer:
 						else:
 							for node in self.graph.nodes.values():
 								if self.mouseover(node, event):
-									self.graph.add_edge(self.selected['id'], node['id'])
+									self.graph.add_edge(node['id'], self.selected['id'])
 									# connect(self.graph.nodes[self.selected], circle)
 						clicking, self.selected = False, None
 
@@ -226,16 +221,17 @@ class Visualizer:
 			run_button.draw(screen)
 
 			# draw circle generator
-			pygame.draw.rect(screen, master_circle['color'], master_circle['rect'], master_circle['size'])
+			pygame.draw.rect(screen, generator['color'], generator['rect'], generator['size'])
+			# draw garbage
 			# draw nodes
 			for node in self.graph.nodes:
-				color = STRAT_COLORS[self.graph.nodes[node]['strategy']]
-				size = int(CIRCLE_RADIUS * max(0.5, self.env.fitness(node)**0.3)) # environment specific
-				pygame.draw.circle(screen, color, self.graph.nodes[node]['pos'], size)
+				size = int(self.graph.nodes[node]['quantity']**0.3 + 10)
 				self.graph.nodes[node]['size'] = size
-				name = self.graph.nodes[node]['first_name'] + ' ' + self.graph.nodes[node]['last_name']
-				text = font.render(name, True, WHITE)
-				screen.blit(text, self.graph.nodes[node]['pos'])
+				if node == "Garbage":
+					pygame.draw.rect(screen, self.graph.nodes[node]['color'], self.graph.nodes[node]['rect'], self.graph.nodes[node]['quantity'])
+					continue
+				color = WHITE#STRAT_COLORS[self.graph.nodes[node]['strategy']]
+				pygame.draw.circle(screen, color, self.graph.nodes[node]['pos'], size)
 
 			for edge in self.graph.edges:
 				self.draw_directed_line(self.graph.nodes[edge[0]]['pos'], self.graph.nodes[edge[1]]['pos'])
@@ -256,7 +252,7 @@ class Visualizer:
 if __name__ == "__main__":
 	a, b, c, d = 2, -0.5, 0.5, 1
 	payoff_matrix = {'A': {'A': a, 'B': b}, 'B': {'A': c, 'B': d}}
-	env = Environment(nx.DiGraph(), payoff_matrix=payoff_matrix, mutation_rate=0.05, w=1)
+	env = DFQEnv(nx.DiGraph())
 
 	vis = Visualizer(env)
 	vis.run()
