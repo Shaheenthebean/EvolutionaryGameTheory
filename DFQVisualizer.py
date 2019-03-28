@@ -1,39 +1,39 @@
 
 # based on the following demo by furas
 # https://github.com/furas/my-python-codes/tree/master/pygame/__template__/
- 
+
 import pygame
 import networkx as nx
 from environment import *
 
 # === CONSTANTS === (UPPER_CASE names)
- 
+
 BLACK = (  0,   0,   0)
 WHITE = (255, 255, 255)
- 
+
 RED   = (255,   0,   0)
 GREEN = (  0, 255,   0)
 BLUE  = (  0,   0, 255)
 
 COLORS = [RED, BLUE]
 STRAT_COLORS = {possible_strategies[0]: RED, possible_strategies[1]: BLUE}
- 
+
 SCREEN_WIDTH  = 600
 SCREEN_HEIGHT = 400
- 
+
 BLOCK_SIZE = 50
 CIRCLE_RADIUS = int(BLOCK_SIZE/2)
 FONT_SIZE = int(CIRCLE_RADIUS*0.75)
 
 # === CLASSES === (CamelCase names)
- 
+
 class Button():
- 
+
 	def __init__(self, text='OK', pos=(0,0), size=(100,50), command=None):
 		font = pygame.font.SysFont(None, 35)
 		self.text = text
 		self.rect = pygame.Rect((0,0), size)
- 
+
 		self.image_normal = pygame.Surface(size)
 		self.image_normal.fill(WHITE)
 		txt_image = font.render(self.text, True, RED)
@@ -45,7 +45,7 @@ class Button():
 		txt_image = font.render(self.text, True, WHITE)
 		txt_rect = txt_image.get_rect(center=self.rect.center)
 		self.image_hover.blit(txt_image, txt_rect)
- 
+
 		self.rect.topleft = pos
 
 		self.hover = False
@@ -130,7 +130,7 @@ class Visualizer:
 
 
 		# - drag -
-		
+
 		clicking = False
 		self.selected = None
 		self.mouse_pos = [0,0]
@@ -138,10 +138,10 @@ class Visualizer:
 		shift_key_held = None
 
 		# --- mainloop ---
-		
+
 		clock = pygame.time.Clock()
 		is_running = True
-		
+
 		while is_running:
 			# --- events ---
 
@@ -154,14 +154,14 @@ class Visualizer:
 				if event.type == pygame.KEYUP:
 					if event.key in [pygame.K_RSHIFT, pygame.K_LSHIFT]:
 						shift_key_held = False
-		
+
 			for event in events:
-		
+
 				# --- global events ---
-			
+
 				if event.type == pygame.QUIT:
 					is_running = False
-		
+
 				elif event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_ESCAPE:
 						is_running = False
@@ -205,7 +205,7 @@ class Visualizer:
 									self.graph.add_edge(self.selected['id'], node['id'])
 									# connect(self.graph.nodes[self.selected], circle)
 						clicking, self.selected = False, None
-					
+
 				elif event.type == pygame.MOUSEMOTION:
 					if self.selected is not None:
 						if making_new_circle or (shift_key_held and clicking):
@@ -218,13 +218,13 @@ class Visualizer:
 				run_button.handle_event(event)
 			
 			# --- draws ---
-		
+
 			screen.fill(BLACK)
-		
+
 			# button1.draw(screen)
 			clear_button.draw(screen)
 			run_button.draw(screen)
-		
+
 			# draw circle generator
 			pygame.draw.rect(screen, master_circle['color'], master_circle['rect'], master_circle['size'])
 			# draw nodes
@@ -245,12 +245,12 @@ class Visualizer:
 				self.draw_directed_line(self.selected['pos'], self.mouse_pos)
 
 			pygame.display.update()
-		
+
 			# --- FPS ---
 			clock.tick(25)
-		
+
 		# --- the end ---
-		
+
 		pygame.quit()
 
 if __name__ == "__main__":
